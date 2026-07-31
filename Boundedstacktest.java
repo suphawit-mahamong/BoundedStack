@@ -100,7 +100,7 @@ public class Boundedstacktest {
         // boundary: เติมจนเต็มพอดีแล้วเติมเพิ่ม
         Boundedstack full = new Boundedstack();
         for (int i = 0; i < Boundedstack.MAX_MOVIES; i++) {
-            full.add("song" + i);
+            full.add("movie" + i);
         }
         check("can fill up to MAX_MOVIES", full.size() == Boundedstack.MAX_MOVIES);
         check("add when full -> returns false", !full.add("one more"));
@@ -115,7 +115,7 @@ public class Boundedstacktest {
         Boundedstack re = new Boundedstack(Arrays.asList("Inception", "Titanic", "ธี่หยด"));
         check("remove(Titanic) -> returns true", re.remove("Titanic"));
         check("remove -> size decreases", re.size() == 2);
-        check("remove -> song is gone", !re.contains("B"));
+        check("remove -> movie is gone", !re.contains("B"));
         check("remove keeps the others in order",
                 re.movies().equals(Arrays.asList("Inception", "ธี่หยด")));
         
