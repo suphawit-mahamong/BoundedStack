@@ -71,7 +71,6 @@ public class Boundedstacktest {
 
         Boundedstack ad = new Boundedstack();
         check("add(A) -> size 1", ad.size() == 1);
-        check("add(A) -> found by contains", ad.contains(""));
         check("add(Car 3) -> returns true", ad.add("Car 3"));
         check("add(ธี่หยด) -> returns true" , ad.add("ธี่หยด"));
 
@@ -137,7 +136,7 @@ public class Boundedstacktest {
 
         Boundedstack s = new Boundedstack(Arrays.asList("Inception", "Titanic"));
         check("size reports 2", s.size() == 2);
-        check("contains finds an existing movie", s.contains("A"));
+        check("contains finds an existing movie", s.contains("Inception"));
         check("contains rejects a missing movie", !s.contains("Z"));
         check("movies returns the full list in order",
                 s.movies().equals(Arrays.asList("Inception", "Titanic")));
@@ -154,7 +153,7 @@ public class Boundedstacktest {
         System.out.println("\n-- Producer (shuffled) --");
 
         Boundedstack original = new Boundedstack(Arrays.asList("Inception", "Titanic", "ธี่หยด", "Car 3"));
-        Boundedstack shuffled = original;
+        Boundedstack shuffled = original.shuffled();
 
         check("shuffled has the same size", shuffled.size() == original.size());
 
@@ -175,6 +174,59 @@ public class Boundedstacktest {
         // boundary: shuffle เพลย์ลิสต์ว่างต้องไม่พัง
         Boundedstack emptyShuffled = new Boundedstack();
         check("shuffling an empty Boundedstack is safe", emptyShuffled.size() == 0);
+
+        System.out.println("\n-- Producer (sorted) --");
+        //เคสปกติ: หนังไม่เรียงมาแต่แรก ต้องเรียงให้ถูก
+        Boundedstack originaled = new Boundedstack(Arrays.asList("Inception", "Titanic", "ธี่หยด", "Car 3"));
+        Boundedstack sorted = originaled.sorted();
+        check("sorted returns movies in ascending order",
+            sorted.movies().equals(Arrays.asList("Inception", "Titanic", "ธี่หยด")));
+            // 2. ขนาดต้องเท่าเดิม
+        check("sorted has the same size", sorted.size() == original.size());
+
+        // 3. ต้องมีหนังครบชุดเดิม ไม่ขาดไม่เกิน
+        List<String> as = new ArrayList<String>(original.movies());
+        List<String> bs = new ArrayList<String>(sorted.movies());
+        Collections.sort(as);
+        Collections.sort(bs);
+        check("sorted contains exactly the same movies", a.equals(b));
+
+        // 4. ต้นฉบับต้องไม่ถูกแก้ไข (ยังเป็นลำดับเดิมก่อนเรียก sorted())
+        check("sorted does not mutate the original",
+            original.movies().equals(Arrays.asList("ธี่หยด", "Inception", "Titanic")));
+
+        // 5. แก้ตัวใหม่ (ผลลัพธ์จาก sorted) ต้องไม่กระทบตัวเดิม
+        sorted.add("Zootopia");
+        check("mutating the result does not affect the original", original.size() == 3);
+
+        // 6. เพลย์ลิสต์ที่เรียงอยู่แล้ว -> ผลลัพธ์ต้องเหมือนเดิม
+        Boundedstack alreadySorted = new Boundedstack(Arrays.asList("Avatar", "Batman", "Zootopia"));
+        check("sorted on already-sorted list stays the same",
+            alreadySorted.sorted().movies().equals(Arrays.asList("Avatar", "Batman", "Zootopia")));
+
+        // 7. เพลย์ลิสต์เรียงกลับด้าน (Z-A) -> ต้องกลับมาเป็น A-Z
+        Boundedstack reverseOrder = new Boundedstack(Arrays.asList("Zootopia", "Batman", "Avatar"));
+        check("sorted reverses a descending list",
+            reverseOrder.sorted().movies().equals(Arrays.asList("Avatar", "Batman", "Zootopia")));
+
+        // 8. boundary: เพลย์ลิสต์ว่าง -> ไม่พัง คืนค่าว่าง
+        Boundedstack empty = new Boundedstack();
+        check("sorting an empty Boundedstack is safe", empty.sorted().size() == 0);
+
+        // 9. boundary: มีหนังเรื่องเดียว -> คืนค่าเดิม ไม่พัง
+        Boundedstack single = new Boundedstack(Arrays.asList("Inception"));
+        check("sorting a single-movie Boundedstack returns itself unchanged",
+            single.sorted().movies().equals(Arrays.asList("Inception")));
+
+        // 10. Representation exposure: ผลลัพธ์ต้องเป็น object คนละตัวจากต้นฉบับ
+        check("sorted returns a different object from the original",
+            sorted != original);
+
+        // 11. แก้ list ที่ได้จาก sorted().movies() ต้องไม่กระทบ Boundedstack ใหม่
+        List<String> gotFromSorted = sorted.movies();
+        gotFromSorted.clear();
+        check("clearing result of sorted().movies() does not affect sorted",
+            sorted.size() != 0);    
     }
 
     // --- ทดสอบว่าไม่เกิด representation exposure ---
